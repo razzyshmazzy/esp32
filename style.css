@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #1a1a1a;
+  font-family: system-ui, sans-serif;
+}
+
+button {
+  padding: 20px 60px;
+  font-size: 24px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #45a049;
+}
+
+button:active {
+  background: #3d8b40;
+}
