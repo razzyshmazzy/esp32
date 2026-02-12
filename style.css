@@ -42,19 +42,32 @@ input {
 }
 
 button {
-  padding: 20px 60px;
-  font-size: 24px;
+  padding: 10px 20px;
+  font-size: 16px;
   background: #4caf50;
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s;
-  margin-top: 20px;
 }
 
 button:hover {
   background: #45a049;
+}
+
+button.active {
+  background: #f44336;
+}
+
+button.active:hover {
+  background: #da190b;
+}
+
+#setColor {
+  padding: 20px 60px;
+  font-size: 24px;
+  margin-top: 20px;
 }
 
 #preview {
