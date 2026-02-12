@@ -2,17 +2,44 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Activate</title>
+  <title>RGB Control</title>
   <style>
     body {
       margin: 0;
       height: 100vh;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       background: #1a1a1a;
       font-family: system-ui, sans-serif;
+      gap: 20px;
     }
+    
+    .color-input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    label {
+      color: white;
+      font-size: 20px;
+      width: 80px;
+    }
+    
+    input {
+      padding: 10px;
+      font-size: 18px;
+      width: 80px;
+      border: none;
+      border-radius: 4px;
+      text-align: center;
+    }
+    
+    .red label { color: #ff6b6b; }
+    .green label { color: #69db7c; }
+    .blue label { color: #74c0fc; }
     
     button {
       padding: 20px 60px;
@@ -23,43 +50,77 @@
       border-radius: 8px;
       cursor: pointer;
       transition: background 0.2s;
+      margin-top: 20px;
     }
     
     button:hover {
       background: #45a049;
     }
     
-    button.off {
-      background: #f44336;
-    }
-    
-    button.off:hover {
-      background: #da190b;
+    #preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid white;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <button id="btn" onclick="toggle()">ACTIVATE</button>
+  <div class="color-input red">
+    <label>Red</label>
+    <input type="number" id="red" min="0" max="255" value="0">
+  </div>
+  
+  <div class="color-input green">
+    <label>Green</label>
+    <input type="number" id="green" min="0" max="255" value="0">
+  </div>
+  
+  <div class="color-input blue">
+    <label>Blue</label>
+    <input type="number" id="blue" min="0" max="255" value="0">
+  </div>
+  
+  <div id="preview"></div>
+  
+  <button onclick="send()">SET COLOR</button>
 
   <script>
-    const FIREBASE_URL = "https://esp32-8d03d-default-rtdb.firebaseio.com/command.json";
-    let isActive = false;
+    const FIREBASE_URL = "https://esp32-8d03d-default-rtdb.firebaseio.com/color.json";
     
-    function toggle() {
-      isActive = !isActive;
-      const command = isActive ? "activate" : "deactivate";
-      const btn = document.getElementById("btn");
-      
-      btn.textContent = isActive ? "DEACTIVATE" : "ACTIVATE";
-      btn.classList.toggle("off", isActive);
+    const redInput = document.getElementById("red");
+    const greenInput = document.getElementById("green");
+    const blueInput = document.getElementById("blue");
+    const preview = document.getElementById("preview");
+    
+    function updatePreview() {
+      const r = redInput.value || 0;
+      const g = greenInput.value || 0;
+      const b = blueInput.value || 0;
+      preview.style.background = `rgb(${r}, ${g}, ${b})`;
+    }
+    
+    redInput.addEventListener("input", updatePreview);
+    greenInput.addEventListener("input", updatePreview);
+    blueInput.addEventListener("input", updatePreview);
+    
+    function send() {
+      const color = {
+        r: parseInt(redInput.value) || 0,
+        g: parseInt(greenInput.value) || 0,
+        b: parseInt(blueInput.value) || 0
+      };
       
       fetch(FIREBASE_URL, {
         method: 'PUT',
-        body: JSON.stringify(command)
+        body: JSON.stringify(color)
       })
-      .then(() => console.log("Sent: " + command))
+      .then(() => console.log("Sent:", color))
       .catch(err => alert("Error: " + err));
     }
+    
+    updatePreview();
   </script>
 </body>
 </html>
