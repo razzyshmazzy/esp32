@@ -29,23 +29,35 @@
       background: #45a049;
     }
     
-    button:active {
-      background: #3d8b40;
+    button.off {
+      background: #f44336;
+    }
+    
+    button.off:hover {
+      background: #da190b;
     }
   </style>
 </head>
 <body>
-  <button onclick="activate()">ACTIVATE</button>
+  <button id="btn" onclick="toggle()">ACTIVATE</button>
 
   <script>
     const FIREBASE_URL = "https://esp32-8d03d-default-rtdb.firebaseio.com/command.json";
+    let isActive = false;
     
-    function activate() {
+    function toggle() {
+      isActive = !isActive;
+      const command = isActive ? "activate" : "deactivate";
+      const btn = document.getElementById("btn");
+      
+      btn.textContent = isActive ? "DEACTIVATE" : "ACTIVATE";
+      btn.classList.toggle("off", isActive);
+      
       fetch(FIREBASE_URL, {
         method: 'PUT',
-        body: JSON.stringify("activate")
+        body: JSON.stringify(command)
       })
-      .then(() => console.log("Sent!"))
+      .then(() => console.log("Sent: " + command))
       .catch(err => alert("Error: " + err));
     }
   </script>
