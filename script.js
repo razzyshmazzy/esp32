@@ -16,6 +16,7 @@ const buttons = {
 };
 
 const preview = document.getElementById("preview");
+const debug = document.getElementById("debug");
 
 const pulse = {
   red: { active: false, direction: 1 },
@@ -48,6 +49,7 @@ function togglePulse(color) {
   pulse[color].active = !pulse[color].active;
   buttons[color].textContent = pulse[color].active ? "STOP" : "START";
   buttons[color].classList.toggle("active", pulse[color].active);
+  debug.textContent = `${color} pulse: ${pulse[color].active}`;
 }
 
 function stepPulse(color) {
@@ -65,6 +67,7 @@ function stepPulse(color) {
   }
 
   inputs[color].value = val;
+  debug.textContent = `${color}: ${val}`;
 }
 
 function send() {
@@ -78,14 +81,23 @@ function send() {
     method: "PUT",
     body: JSON.stringify(color),
   })
-    .then(() => console.log("Sent:", color))
-    .catch((err) => alert("Error: " + err));
+    .then(
+      () => (debug.textContent = `Sent: ${color.r}, ${color.g}, ${color.b}`),
+    )
+    .catch((err) => (debug.textContent = "Error: " + err));
 }
+
+// Event listeners
+buttons.red.addEventListener("click", () => togglePulse("red"));
+buttons.green.addEventListener("click", () => togglePulse("green"));
+buttons.blue.addEventListener("click", () => togglePulse("blue"));
+document.getElementById("setColor").addEventListener("click", send);
 
 inputs.red.addEventListener("input", updatePreview);
 inputs.green.addEventListener("input", updatePreview);
 inputs.blue.addEventListener("input", updatePreview);
 
+// Main loop
 setInterval(() => {
   stepPulse("red");
   stepPulse("green");
