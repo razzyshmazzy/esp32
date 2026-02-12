@@ -1,4 +1,4 @@
-const FIREBASE_URL = "https://YOUR-PROJECT-ID.firebaseio.com/command.json";
+const FIREBASE_URL = "https://esp32-8d03d.firebaseio.com/command.json";
 
 function activate() {
   fetch(FIREBASE_URL, {
