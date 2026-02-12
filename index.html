@@ -1,33 +1,229 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>RGB Control</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="color-input red">
-      <label>Red</label>
-      <input type="number" id="red" min="0" max="255" value="0" />
-      <button id="redPulse" onclick="togglePulse('red')">START</button>
-    </div>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <title>RGB Control</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #1a1a1a;
+      font-family: 'Inter', sans-serif;
+      gap: 20px;
+    }
+    
+    .color-input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    label {
+      color: white;
+      font-size: 18px;
+      font-weight: 500;
+      width: 70px;
+    }
+    
+    input {
+      padding: 10px;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      width: 70px;
+      height: 20px;
+      border: none;
+      border-radius: 6px;
+      text-align: center;
+      background: #2d2d2d;
+      color: white;
+    }
+    
+    .red label { color: #ff6b6b; }
+    .green label { color: #69db7c; }
+    .blue label { color: #74c0fc; }
+    
+    .pulse-btn {
+      padding: 0;
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      background: #2d5a2e;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+      width: 50px;
+      height: 42px;
+    }
+    
+    .pulse-btn:hover {
+      background: #3d6a3e;
+    }
+    
+    .pulse-btn.active {
+      background: #5a2d2d;
+    }
+    
+    .pulse-btn.active:hover {
+      background: #6a3d3d;
+    }
+    
+    #setColor {
+      padding: 16px 50px;
+      font-size: 18px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      margin-top: 20px;
+      background: #2d5a2e;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    #setColor:hover {
+      background: #3d6a3e;
+    }
+    
+    #preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid #333;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="color-input red">
+    <label>Red</label>
+    <input type="number" id="red" min="0" max="255" value="0">
+    <button class="pulse-btn" id="redPulse" onclick="togglePulse('red')">START</button>
+  </div>
+  
+  <div class="color-input green">
+    <label>Green</label>
+    <input type="number" id="green" min="0" max="255" value="0">
+    <button class="pulse-btn" id="greenPulse" onclick="togglePulse('green')">START</button>
+  </div>
+  
+  <div class="color-input blue">
+    <label>Blue</label>
+    <input type="number" id="blue" min="0" max="255" value="0">
+    <button class="pulse-btn" id="bluePulse" onclick="togglePulse('blue')">START</button>
+  </div>
+  
+  <div id="preview"></div>
+  
+  <button id="setColor" onclick="send()">SET COLOR</button>
 
-    <div class="color-input green">
-      <label>Green</label>
-      <input type="number" id="green" min="0" max="255" value="0" />
-      <button id="greenPulse" onclick="togglePulse('green')">START</button>
-    </div>
-
-    <div class="color-input blue">
-      <label>Blue</label>
-      <input type="number" id="blue" min="0" max="255" value="0" />
-      <button id="bluePulse" onclick="togglePulse('blue')">START</button>
-    </div>
-
-    <div id="preview"></div>
-
-    <button id="setColor" onclick="send()">SET COLOR</button>
-
-    <script src="style.css"></script>
-  </body>
+  <script>
+    const FIREBASE_URL = "https://esp32-8d03d-default-rtdb.firebaseio.com/color.json";
+    const POLL_INTERVAL = 1000;
+    const STEP = 5;
+    
+    const inputs = {
+      red: document.getElementById("red"),
+      green: document.getElementById("green"),
+      blue: document.getElementById("blue")
+    };
+    
+    const buttons = {
+      red: document.getElementById("redPulse"),
+      green: document.getElementById("greenPulse"),
+      blue: document.getElementById("bluePulse")
+    };
+    
+    const preview = document.getElementById("preview");
+    
+    const pulse = {
+      red: { active: false, direction: 1 },
+      green: { active: false, direction: 1 },
+      blue: { active: false, direction: 1 }
+    };
+    
+    function updatePreview() {
+      const r = inputs.red.value || 0;
+      const g = inputs.green.value || 0;
+      const b = inputs.blue.value || 0;
+      preview.style.background = `rgb(${r}, ${g}, ${b})`;
+    }
+    
+    function loadCurrentValues() {
+      fetch(FIREBASE_URL)
+        .then(res => res.json())
+        .then(color => {
+          if (color) {
+            inputs.red.value = color.r || 0;
+            inputs.green.value = color.g || 0;
+            inputs.blue.value = color.b || 0;
+            updatePreview();
+          }
+        })
+        .catch(err => console.log("Couldn't load values:", err));
+    }
+    
+    function togglePulse(color) {
+      pulse[color].active = !pulse[color].active;
+      buttons[color].textContent = pulse[color].active ? "STOP" : "START";
+      buttons[color].classList.toggle("active", pulse[color].active);
+    }
+    
+    function stepPulse(color) {
+      if (!pulse[color].active) return;
+      
+      let val = parseInt(inputs[color].value) || 0;
+      val += STEP * pulse[color].direction;
+      
+      if (val >= 255) {
+        val = 255;
+        pulse[color].direction = -1;
+      } else if (val <= 0) {
+        val = 0;
+        pulse[color].direction = 1;
+      }
+      
+      inputs[color].value = val;
+    }
+    
+    function send() {
+      const color = {
+        r: parseInt(inputs.red.value) || 0,
+        g: parseInt(inputs.green.value) || 0,
+        b: parseInt(inputs.blue.value) || 0
+      };
+      
+      fetch(FIREBASE_URL, {
+        method: 'PUT',
+        body: JSON.stringify(color)
+      })
+      .then(() => console.log("Sent:", color))
+      .catch(err => alert("Error: " + err));
+    }
+    
+    inputs.red.addEventListener("input", updatePreview);
+    inputs.green.addEventListener("input", updatePreview);
+    inputs.blue.addEventListener("input", updatePreview);
+    
+    setInterval(() => {
+      stepPulse('red');
+      stepPulse('green');
+      stepPulse('blue');
+      updatePreview();
+      
+      if (pulse.red.active || pulse.green.active || pulse.blue.active) {
+        send();
+      }
+    }, POLL_INTERVAL);
+    
+    loadCurrentValues();
+  </script>
+</body>
 </html>
