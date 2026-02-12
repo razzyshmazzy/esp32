@@ -2,10 +2,43 @@ body {
   margin: 0;
   height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   background: #1a1a1a;
   font-family: system-ui, sans-serif;
+  gap: 20px;
+}
+
+.color-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+label {
+  color: white;
+  font-size: 20px;
+  width: 80px;
+}
+
+input {
+  padding: 10px;
+  font-size: 18px;
+  width: 80px;
+  border: none;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.red label {
+  color: #ff6b6b;
+}
+.green label {
+  color: #69db7c;
+}
+.blue label {
+  color: #74c0fc;
 }
 
 button {
@@ -17,12 +50,17 @@ button {
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s;
+  margin-top: 20px;
 }
 
 button:hover {
   background: #45a049;
 }
 
-button:active {
-  background: #3d8b40;
+#preview {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid white;
+  margin-top: 20px;
 }
